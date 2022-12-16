@@ -2,62 +2,66 @@
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.DevTools;
+using OpenQA.Selenium.Support;
 using OpenQA.Selenium.Interactions;
+using OpenQA.Selenium.Support.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using SeleniumExtras.WaitHelpers;
 using System.Threading.Tasks;
 
 namespace GourgeistGroupSearcher
 {
     public class Methods
     {
-        internal static void click(ChromeDriver driver, string p)
+        internal static void click(string p)
         {
-            IWebElement button = driver.FindElement(By.XPath(p));
-            new Actions(driver)
+            wait(GourgeistBot.driver, p);
+            IWebElement button = GourgeistBot.driver.FindElement(By.XPath(p));
+            new Actions(GourgeistBot.driver)
                 .MoveToElement(button)
                 .Click()
-                .Pause(TimeSpan.FromSeconds(.2))
+                /*.Pause(TimeSpan.FromSeconds(.2))*/
                 .Perform();
         }
-        internal static void write(ChromeDriver driver, string p, string input)
+        internal static void write(string p, string input)
         {
-            IWebElement field = driver.FindElement(By.XPath(p));
-            new Actions(driver)
+            wait(GourgeistBot.driver, p);
+            IWebElement field = GourgeistBot.driver.FindElement(By.XPath(p));
+            new Actions(GourgeistBot.driver)
                 .MoveToElement(field)
                 .Click()
                 .SendKeys(input)
-                .Pause(TimeSpan.FromSeconds(.2))
+                /*.Pause(TimeSpan.FromSeconds(.2))*/
                 .Perform();
         }
-        internal static string getString(ChromeDriver driver, string p)
+        internal static string getString(string p)
         {
-            IWebElement field = null;
+            wait(GourgeistBot.driver, p);
+            IWebElement field = GourgeistBot.driver.FindElement(By.XPath(p));
+            Console.WriteLine(GourgeistBot.driver.FindElement(By.XPath(p)).GetAttribute("href"));
+            return GourgeistBot.driver.FindElement(By.XPath(p)).GetAttribute("href");
+        }
+        protected static void wait(ChromeDriver driver, string p)
+        {
             try
             {
-                field = driver.FindElement(By.XPath(p));
-                new Actions(driver)
-                    .MoveToElement(field)
-                    .Click()
-                    .Pause(TimeSpan.FromSeconds(.2))
-                    .SendKeys(Variables.groupName)
-                    .Perform();
+                WebDriverWait wait = new WebDriverWait(driver, TimeSpan.FromSeconds(3));
+                wait.Until(ExpectedConditions.ElementIsVisible(By.XPath(p)));
             }
-            catch { return "Not on right page? Slow internet?"; }
+            catch { }
+        }
+        internal static void delete(ChromeDriver driver)
+        {
             try
             {
-                return driver.FindElement(By.XPath(p)).Text;
-            } catch { return "Not on right page? Slow internet?"; }
-        }
-        internal static string getID(string p)
-        {
-            return p.Substring(p.Length - 4);
-        }
-        static string deleteGroup(string p)
-        {
-            return p.Substring(p.Length - 4);
+                driver.Navigate().GoToUrl(driver.Url+"/settings");
+                Methods.click("//*[@id=\"app\"]/main/div[2]/div[2]/div/div[2]/div/div/div/div[5]/div[4]/div/div/button");
+                Methods.click("//*[@id=\"home\"]/div[2]/div/div[1]/div/div/div[2]/div/div[2]/div/button");
+            }
+            catch { }
         }
     }
 }
